@@ -6,10 +6,32 @@ from rest_framework.exceptions import ValidationError
 from rest_framework import serializers
 from rest_framework.fields import set_value, empty
 from rest_framework.compat import OrderedDict
+from rest_framework.utils import model_meta
 from rest_framework.utils.field_mapping import get_nested_relation_kwargs
 
 
 class NestedListSerializer(serializers.ListSerializer):
+
+    def create(self, validated_data):
+        return_instances = []
+
+        for child_data in validated_data:
+            if child_data.get("id", empty) is empty:
+                # The id field is empty, so this is a create
+
+                if "id" in child_data:
+                    # Need to kill this, because it's technically a read-only field
+                    del child_data["id"]
+
+                return_instances.append(self.child.create(child_data))
+            else:
+                # We have an id, so let's grab this sumbitch
+                ModelClass = self.child.Meta.model
+
+                child_instance = ModelClass.objects.get(pk=child_data["id"])
+                return_instances.append(self.child.update(child_instance, child_data))
+
+        return return_instances
 
     def update(self, instance, validated_data):
         # instance is a qs...
@@ -66,6 +88,10 @@ class NestedModelSerializer(serializers.ModelSerializer):
 
         field_class = NestedSerializer
         field_kwargs = get_nested_relation_kwargs(relation_info)
+        field_kwargs["read_only"] = False
+
+        if field_kwargs.get("many"):
+            field_kwargs["required"] = False
 
         return field_class, field_kwargs
 
@@ -102,23 +128,49 @@ class NestedModelSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
 
-        popped_data = {}
+        ModelClass = self.Meta.model
+
+        # Remove many-to-many relationships from validated_data.
+        # They are not valid arguments to the default `.create()` method,
+        # as they require that the instance has already been saved.
+        info = model_meta.get_field_info(ModelClass)
+        many_to_many = {}
+        for field_name, relation_info in info.relations.items():
+            if relation_info.to_many and (field_name in validated_data):
+                many_to_many[field_name] = validated_data.pop(field_name)
 
         # Save off the data
         for key, field in self.fields.items():
-            if isinstance(field, serializers.BaseSerializer) and isinstance(validated_data.get(key), (list, dict)):
-                # So, this looks like a nested field.
-                popped_data[key] = validated_data.pop(key)
+            if isinstance(field, serializers.BaseSerializer):
+                if isinstance(validated_data.get(key), list):
+                    # One-to-many...
+                    nested_data = validated_data.pop(key)
+                    field.create(nested_data)
+                elif isinstance(validated_data.get(key), dict):
+                    # ForeignKey
+                    nested_data = validated_data.pop(key)
+                    if nested_data.get("id", empty) is empty:
+                        # No id, so it looks like we've got a create...
+
+                        del nested_data["id"]
+                        child_instance = field.create(nested_data)
+                    else:
+                        # Update
+                        ChildClass = field.Meta.model
+                        child_instance = ChildClass.objects.get(pk=nested_data["id"])
+
+                        del nested_data["id"]
+
+                        child_instance = field.update(child_instance, nested_data)
+
+                    validated_data[key] = child_instance
 
         # Create the base instance
-        instance = super(NestedModelSerializer, self).create(validated_data)  
+        instance = ModelClass.objects.create(**validated_data)
 
-        # Save the related fields
-        for key, field in self.fields.items():
-            if isinstance(field, serializers.BaseSerializer) and isinstance(popped_data.get(key), (list, dict)):
-                nested_data = popped_data[key]
-
-                child_instances = getattr(instance, key)
-                field.update(child_instances.all(), nested_data)
+        # Save many-to-many relationships after the instance is created.
+        if many_to_many:
+            for field_name, value in many_to_many.items():
+                setattr(instance, field_name, value)
 
         return instance

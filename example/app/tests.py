@@ -23,6 +23,33 @@ class ArticleCase(TestCase):
 			'tags': []
 		})
 
+	def test_nested_create(self):
+
+		self.assertEqual(FeatureType.objects.count(), 0)
+		serializer = ArticleSerializer(data={
+			'title': 'testing',
+			'feature_type': {
+				'name': 'testing'
+			}
+		})
+		assert serializer.is_valid()
+		instance = serializer.save()
+
+		self.assertEqual(FeatureType.objects.count(), 1)
+
+		ft = FeatureType.objects.get()
+		serializer = ArticleSerializer(data={
+			'title': 'testing 2',
+			'feature_type': {
+				'id': ft.id,
+				'name': ft.name
+			}
+		})
+		assert serializer.is_valid()
+		instance = serializer.save()
+
+		self.assertEqual(FeatureType.objects.count(), 1)
+
 
 class QuizCase(TestCase):
 
