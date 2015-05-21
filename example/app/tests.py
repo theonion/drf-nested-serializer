@@ -1,8 +1,28 @@
 from django.test import TestCase
 
 
-from .serializers import QuizSerializer
-from .models import Quiz, QuizOutcome, QuizAnswer, QuizQuestion
+from .serializers import QuizSerializer, ArticleSerializer
+from .models import *  # noqa
+
+
+class ArticleCase(TestCase):
+	
+	def test_update(self):
+		feature_type = FeatureType.objects.create(name="A.V. Q&A")
+		article = Article.objects.create(title="Some thinkpiece", feature_type=feature_type)
+
+		serializer = ArticleSerializer(instance=article)
+		
+		self.assertEqual(serializer.data, {
+			'id': article.id,
+			'title': 'Some thinkpiece',
+			'feature_type': {
+				'id': feature_type.id,
+				'name': 'A.V. Q&A'
+			},
+			'tags': []
+		})
+
 
 class QuizCase(TestCase):
 

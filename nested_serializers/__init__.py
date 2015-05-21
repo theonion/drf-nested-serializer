@@ -6,6 +6,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework import serializers
 from rest_framework.fields import set_value, empty
 from rest_framework.compat import OrderedDict
+from rest_framework.utils.field_mapping import get_nested_relation_kwargs
 
 
 class NestedListSerializer(serializers.ListSerializer):
@@ -53,6 +54,20 @@ class NestedModelSerializer(serializers.ModelSerializer):
     def many_init(cls, *args, **kwargs):
         kwargs['child'] = cls()
         return NestedListSerializer(*args, **kwargs)
+
+    def build_nested_field(self, field_name, relation_info, nested_depth):
+        """
+        Create nested fields for forward and reverse relationships.
+        """
+        class NestedSerializer(NestedModelSerializer):
+            class Meta:
+                model = relation_info.related_model
+                depth = nested_depth - 1
+
+        field_class = NestedSerializer
+        field_kwargs = get_nested_relation_kwargs(relation_info)
+
+        return field_class, field_kwargs
 
     def to_internal_value(self, data):
         ret = super(NestedModelSerializer, self).to_internal_value(data)

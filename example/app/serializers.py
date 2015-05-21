@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Quiz, QuizAnswer, QuizOutcome, QuizQuestion
+from .models import Quiz, QuizAnswer, QuizOutcome, QuizQuestion, Article, Tag, FeatureType
 
 from nested_serializers import NestedModelSerializer
 
@@ -31,3 +31,10 @@ class QuizSerializer(NestedModelSerializer):
 
     class Meta:
         model = Quiz
+
+
+class ArticleSerializer(NestedModelSerializer):
+
+    class Meta:
+        model = Article
+        depth = 1
