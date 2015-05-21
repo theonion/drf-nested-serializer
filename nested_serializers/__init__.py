@@ -10,7 +10,6 @@ from rest_framework.compat import OrderedDict
 
 class NestedListSerializer(serializers.ListSerializer):
 
-
     def update(self, instance, validated_data):
         # instance is a qs...
         current_objects = {obj.id: obj for obj in instance}
@@ -32,10 +31,18 @@ class NestedListSerializer(serializers.ListSerializer):
 
                 return_instances.append(self.child.update(child_instance, child_data))
                 
+        if self.parent:
+            parent_model = self.parent.Meta.model
+            child_model = self.child.Meta.model
 
-        # Delete any unattached objects (only if we have a parent model that we depend on...)
-        for obj_id, obj in current_objects.items():
-            obj.delete()
+            dependent_fields = [f for f in child_model._meta.get_fields() if
+                f.is_relation and f.related_model == parent_model and not f.null]
+
+            if dependent_fields:
+                # Delete any unattached objects
+                for obj_id, obj in current_objects.items():
+                    obj.delete()
+
 
         return return_instances
 

@@ -57,6 +57,17 @@ class QuizCase(TestCase):
 		quiz = Quiz.objects.get(id=self.quiz.id)
 		self.assertEqual(quiz.title, 'universe quiz')
 
+	def test_nested_errors(self):
+		serializer = QuizSerializer(instance=self.quiz)
+		updated_data = serializer.data
+
+		updated_data['outcome_set'].append({
+			'quiz': self.quiz.id
+		})
+		serializer = QuizSerializer(instance=self.quiz, data=updated_data)
+		assert serializer.is_valid() is False
+		self.assertEqual(serializer.errors, {'outcome_set': [{}, {'text': ['This field is required.']}]})
+
 	def test_add_remove_outcome(self):
 		serializer = QuizSerializer(instance=self.quiz)
 		updated_data = serializer.data
