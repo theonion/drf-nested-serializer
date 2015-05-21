@@ -57,7 +57,7 @@ class QuizCase(TestCase):
 		quiz = Quiz.objects.get(id=self.quiz.id)
 		self.assertEqual(quiz.title, 'universe quiz')
 
-	def test_add_outcome(self):
+	def test_add_remove_outcome(self):
 		serializer = QuizSerializer(instance=self.quiz)
 		updated_data = serializer.data
 
@@ -73,5 +73,13 @@ class QuizCase(TestCase):
 		serializer.save()
 
 		self.assertEqual(len(serializer.data['outcome_set']), 2)
-
 		self.assertEqual(QuizOutcome.objects.count(), 2)
+
+		updated_data['outcome_set'].pop()  # Kill that last item
+
+		serializer = QuizSerializer(instance=self.quiz, data=updated_data)
+		assert serializer.is_valid()
+		serializer.save()
+
+		self.assertEqual(len(serializer.data['outcome_set']), 1)
+		self.assertEqual(QuizOutcome.objects.count(), 1)
