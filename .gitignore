@@ -1,0 +1,7 @@
+*.py[co]
+
+.Python
+bin
+lib
+*.egg-info
+include
