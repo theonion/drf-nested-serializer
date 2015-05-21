@@ -114,15 +114,40 @@ class NestedModelSerializer(serializers.ModelSerializer):
         return ret
 
     def update(self, instance, validated_data):
+        """This methods acts just like it's parent, except that it creates and updates nested object"""
 
         for key, field in self.fields.items():
-            if isinstance(field, serializers.BaseSerializer) and isinstance(validated_data.get(key), (list, dict)):
-                # So, this looks like a nested field.
-                nested_data = validated_data.pop(key)
-
+            if isinstance(field, serializers.BaseSerializer):
+                
                 child_instances = getattr(instance, key)
 
-                field.update(child_instances.all(), nested_data)
+                # TODO: DRY UP THIS SHIT....
+
+                # If this field is a serializer, we probably are dealing with a nested object
+                if isinstance(validated_data.get(key), list):
+                    # This will get handled in NestedListSerializer...
+                    
+                    nested_data = validated_data.pop(key)
+                    field.update(child_instances.all(), nested_data)
+                
+                elif isinstance(validated_data.get(key), dict):
+                    # Looks like we're dealing with some kind of ForeignKey
+
+                    nested_data = validated_data.pop(key)
+                    if nested_data.get("id", empty) is empty:
+                        # No id, so it looks like we've got a create...
+
+                        del nested_data["id"]
+                        child_instance = field.create(nested_data)
+                    else:
+                        # Update
+                        ChildClass = field.Meta.model
+                        child_instance = ChildClass.objects.get(pk=nested_data["id"])
+
+                        del nested_data["id"]
+
+                        child_instance = field.update(child_instance, nested_data)
+                    validated_data[key] = child_instance
 
         return super(NestedModelSerializer, self).update(instance, validated_data)
 
