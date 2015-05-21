@@ -7,7 +7,7 @@ from .models import *  # noqa
 
 class ArticleCase(TestCase):
 	
-	def test_update(self):
+	def test_serialization(self):
 		feature_type = FeatureType.objects.create(name="A.V. Q&A")
 		article = Article.objects.create(title="Some thinkpiece", feature_type=feature_type)
 
