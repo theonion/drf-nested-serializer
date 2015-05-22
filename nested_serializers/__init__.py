@@ -122,6 +122,7 @@ class NestedModelSerializer(serializers.ModelSerializer):
                     # This will get handled in NestedListSerializer...
 
                     nested_data = validated_data.pop(key)
+
                     field.update(child_instances.all(), nested_data)
 
                 elif isinstance(validated_data.get(key), dict):
@@ -130,8 +131,10 @@ class NestedModelSerializer(serializers.ModelSerializer):
                     nested_data = validated_data.pop(key)
                     if nested_data.get("id", empty) is empty:
                         # No id, so it looks like we've got a create...
-
-                        del nested_data["id"]
+                        try:
+                            del nested_data["id"]
+                        except KeyError:
+                            pass
                         child_instance = field.create(nested_data)
                     else:
                         # Update
@@ -154,9 +157,6 @@ class NestedModelSerializer(serializers.ModelSerializer):
         # as they require that the instance has already been saved.
         info = model_meta.get_field_info(ModelClass)
         many_to_many = {}
-        for field_name, relation_info in info.relations.items():
-            if relation_info.to_many and (field_name in validated_data):
-                many_to_many[field_name] = validated_data.pop(field_name)
 
         # Save off the data
         for key, field in self.fields.items():
@@ -164,7 +164,10 @@ class NestedModelSerializer(serializers.ModelSerializer):
                 if isinstance(validated_data.get(key), list):
                     # One-to-many...
                     nested_data = validated_data.pop(key)
-                    field.create(nested_data)
+                    many_to_many[key] = field.create(nested_data)
+
+
+
                 elif isinstance(validated_data.get(key), dict):
                     # ForeignKey
                     nested_data = validated_data.pop(key)

@@ -137,13 +137,16 @@ class ArticleCase(TestCase):
         _ = serializer.save()
         self.assertEqual(FeatureType.objects.count(), 1)
         ft = FeatureType.objects.create(name='AV Undercover')
-        serializer.data['feature_type'] = {
+
+        updated_data = serializer.data
+        updated_data['feature_type'] = {
             'id': ft.id,
             'name': ft.name,
         }
+        serializer = ArticleSerializer(data=updated_data)
         assert serializer.is_valid()
         _ = serializer.save()
-        self.assertEqual(FeatureType.objects.count(), 2)
+        self.assertEqual(_.feature_type.id, ft.id)
 
     def test_nested_list_update(self):
         """PUT
@@ -169,10 +172,13 @@ class ArticleCase(TestCase):
         _ = serializer.save()
         self.assertEqual(Tag.objects.count(), 0)
         tag = Tag.objects.create(name='this is a tag')
-        serializer.data['tags'].append({
+
+        updated_data = serializer.data
+        updated_data['tags'].append({
             'id': tag.id,
             'name': tag.name,
         })
+        serializer = ArticleSerializer(data=updated_data)
         assert serializer.is_valid()
         _ = serializer.save()
         self.assertEqual(Tag.objects.count(), 1)
@@ -200,9 +206,13 @@ class ArticleCase(TestCase):
         assert serializer.is_valid()
         _ = serializer.save()
         self.assertEqual(Tag.objects.count(), 0)
-        serializer.data['tags'].append({
+
+
+        updated_data = serializer.data
+        updated_data['tags'].append({
             'name': 'this is another tag',
         })
+        serializer = ArticleSerializer(data=updated_data)
         assert serializer.is_valid()
         _ = serializer.save()
         self.assertEqual(Tag.objects.count(), 1)
