@@ -47,6 +47,28 @@ class ArticleCase(TestCase):
 
         self.assertEqual(FeatureType.objects.count(), 1)
 
+    def test_nested_m2m_create(self):
+
+        self.assertEqual(Tag.objects.count(), 0)
+
+        serializer = ArticleSerializer(data={
+            'title': 'testing',
+            'feature_type': {
+                'name': 'testing'
+            },
+            'tags': [{
+                'name': 'wow'
+            },
+            {
+                'name': 'dads'
+            }]
+        })
+        assert serializer.is_valid()
+        instance = serializer.save()
+
+        self.assertEqual(instance.tags.count(), 2)
+        self.assertEqual(Tag.objects.count(), 2)
+
 
 class QuizCase(TestCase):
     def setUp(self):
