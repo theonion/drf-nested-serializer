@@ -1,4 +1,4 @@
-# drf-nested-serializer
+# drf-nested-serializer [![Build Status](https://travis-ci.org/theonion/drf-nested-serializer.svg?branch=master)](https://travis-ci.org/theonion/drf-nested-serializer) [![Coverage Status](https://coveralls.io/repos/theonion/drf-nested-serializer/badge.svg?branch=master)](https://coveralls.io/r/theonion/drf-nested-serializer?branch=master)
 
 This project is an attempt to provide new DRF Serializer base classes that work for the *majority* of use cases.
 
