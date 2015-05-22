@@ -80,4 +80,5 @@ setup(
     extras_require={
         'dev': dev_requires,
     },
+    test_suite = "example.runtests"
 )

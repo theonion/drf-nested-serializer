@@ -1,0 +1,14 @@
+language: python
+python:
+  - '2.7'
+  - '3.4'
+install:
+  - travis_retry pip install -e .
+  - travis_retry pip install "file://$(pwd)#egg=drf-nested-serializer[dev]"
+script:
+  - python setup.py test
+notifications:
+  email:
+    - csinchok@theonion.com
+  on_failure: change
+  on_success: change
