@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import setup
 import os
 import re
 import sys
+from setuptools import setup
 
 
 name = "drf-nested-serializers"
@@ -14,6 +14,7 @@ url = "https://github.com/theonion/drf-nested-serializers"
 author = "Chris Sinchok"
 author_email = "csinchok@theonion.com"
 license = "BSD"
+
 requires = [
     "django>1.8",
     "djangorestframework>=3.0"
@@ -64,7 +65,6 @@ if sys.argv[-1] == "publish":
     print("  git tag -a %(version)s -m 'version %(version)s'" % args)
     print("  git push --tags")
     sys.exit()
-
 
 setup(
     name=name,

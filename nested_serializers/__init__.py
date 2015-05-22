@@ -1,8 +1,5 @@
 __version__ = "0.1"
 
-from django.core.exceptions import ValidationError as DjangoValidationError
-from rest_framework.exceptions import ValidationError
-
 from rest_framework import serializers
 from rest_framework.fields import set_value, empty
 from rest_framework.compat import OrderedDict
@@ -11,7 +8,6 @@ from rest_framework.utils.field_mapping import get_nested_relation_kwargs
 
 
 class NestedListSerializer(serializers.ListSerializer):
-
     def create(self, validated_data):
         return_instances = []
 
@@ -53,25 +49,23 @@ class NestedListSerializer(serializers.ListSerializer):
                 child_instance = current_objects.pop(child_data["id"])
 
                 return_instances.append(self.child.update(child_instance, child_data))
-                
+
         if self.parent:
             parent_model = self.parent.Meta.model
             child_model = self.child.Meta.model
 
             dependent_fields = [f for f in child_model._meta.get_fields() if
-                f.is_relation and f.related_model == parent_model and not f.null]
+                                f.is_relation and f.related_model == parent_model and not f.null]
 
             if dependent_fields:
                 # Delete any unattached objects
                 for obj_id, obj in current_objects.items():
                     obj.delete()
 
-
         return return_instances
 
 
 class NestedModelSerializer(serializers.ModelSerializer):
-
     @classmethod
     def many_init(cls, *args, **kwargs):
         kwargs['child'] = cls()
@@ -81,6 +75,7 @@ class NestedModelSerializer(serializers.ModelSerializer):
         """
         Create nested fields for forward and reverse relationships.
         """
+
         class NestedSerializer(NestedModelSerializer):
             class Meta:
                 model = relation_info.related_model
@@ -100,7 +95,6 @@ class NestedModelSerializer(serializers.ModelSerializer):
 
         # So, in the case that this object is nested, we really really need the id.
         if getattr(self, 'parent', None):
-
             child_model = self.Meta.model
             pk_field_name = child_model._meta.pk.name
 
@@ -118,7 +112,7 @@ class NestedModelSerializer(serializers.ModelSerializer):
 
         for key, field in self.fields.items():
             if isinstance(field, serializers.BaseSerializer):
-                
+
                 child_instances = getattr(instance, key)
 
                 # TODO: DRY UP THIS SHIT....
@@ -126,10 +120,10 @@ class NestedModelSerializer(serializers.ModelSerializer):
                 # If this field is a serializer, we probably are dealing with a nested object
                 if isinstance(validated_data.get(key), list):
                     # This will get handled in NestedListSerializer...
-                    
+
                     nested_data = validated_data.pop(key)
                     field.update(child_instances.all(), nested_data)
-                
+
                 elif isinstance(validated_data.get(key), dict):
                     # Looks like we're dealing with some kind of ForeignKey
 

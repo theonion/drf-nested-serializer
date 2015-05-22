@@ -2,8 +2,6 @@ from rest_framework import serializers
 
 
 class NestedListSerializer(serializers.ListSerializer):
-
-
     def update(self, instance, validated_data):
         # instance is a qs...
         current_objects = {obj.id: obj for obj in instance}
@@ -26,7 +24,6 @@ class NestedListSerializer(serializers.ListSerializer):
 
 
 class NestedModelSerializer(serializers.ModelSerializer):
-
     @classmethod
     def many_init(cls, *args, **kwargs):
         kwargs['child'] = cls()
@@ -56,7 +53,7 @@ class NestedModelSerializer(serializers.ModelSerializer):
                 popped_data[key] = validated_data.pop(key)
 
         # Create the base instance
-        instance = super(NestedModelSerializer, self).create(validated_data)  
+        instance = super(NestedModelSerializer, self).create(validated_data)
 
         # Save the related fields
         for key, field in self.fields.items():
