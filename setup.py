@@ -22,6 +22,8 @@ requires = [
 
 dev_requires = [
     "model-mommy==1.2.4",
+    "coveralls==0.5",
+    "coverage==3.7.1"
 ]
 
 

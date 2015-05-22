@@ -6,7 +6,7 @@ install:
   - travis_retry pip install -e .
   - travis_retry pip install "file://$(pwd)#egg=drf-nested-serializer[dev]"
 script:
-  - python setup.py test
+  - coverage run --source=nested_serializers setup.py test
 notifications:
   email:
     - csinchok@theonion.com
