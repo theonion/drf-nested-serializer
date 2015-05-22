@@ -113,6 +113,10 @@ class ArticleCase(TestCase):
         })
         assert serializer.is_valid()
         _ = serializer.save()
+
+        self.assertEqual(_.feature_type.name, 'tag tester')
+        self.assertEqual(_.tags.count(), 2)
+
         self.assertEqual(FeatureType.objects.count(), 1)
         self.assertEqual(Tag.objects.count(), 2)
 
