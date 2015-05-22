@@ -4,7 +4,7 @@ python:
   - '3.4'
 install:
   - travis_retry pip install -e .
-  - travis_retry pip install file://$(pwd)#egg=drf-nested-serializer[dev]
+  - travis_retry pip install "file://$(pwd)#egg=drf-nested-serializer[dev]"
 notifications:
   email:
     - csinchok@theonion.com

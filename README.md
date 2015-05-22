@@ -2,9 +2,17 @@
 
 This project is an attempt to provide new DRF Serializer base classes that work for the *majority* of use cases.
 
-Specifically:
 
-# Simple ForeignKey and ManyToManyField serialization
+## Development Setup
+
+```bash
+$ pip install -e .
+$ pip install "file://$(pwd)#egg=drf-nested-serializer[dev]"
+$ python setup.py test
+```
+
+
+## Simple ForeignKey and ManyToManyField serialization
 
 For example, given these simple related models, and a single serializer:
 
