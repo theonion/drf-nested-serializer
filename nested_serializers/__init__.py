@@ -122,6 +122,7 @@ class NestedModelSerializer(serializers.ModelSerializer):
                     # This will get handled in NestedListSerializer...
 
                     nested_data = validated_data.pop(key)
+
                     field.update(child_instances.all(), nested_data)
 
                 elif isinstance(validated_data.get(key), dict):
@@ -130,8 +131,10 @@ class NestedModelSerializer(serializers.ModelSerializer):
                     nested_data = validated_data.pop(key)
                     if nested_data.get("id", empty) is empty:
                         # No id, so it looks like we've got a create...
-
-                        del nested_data["id"]
+                        try:
+                            del nested_data["id"]
+                        except KeyError:
+                            pass
                         child_instance = field.create(nested_data)
                     else:
                         # Update

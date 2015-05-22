@@ -30,7 +30,7 @@ class ArticleCase(TestCase):
             }
         })
         assert serializer.is_valid()
-        instance = serializer.save()
+        _ = serializer.save()
 
         self.assertEqual(FeatureType.objects.count(), 1)
 
@@ -43,31 +43,183 @@ class ArticleCase(TestCase):
             }
         })
         assert serializer.is_valid()
-        instance = serializer.save()
+        _ = serializer.save()
 
         self.assertEqual(FeatureType.objects.count(), 1)
 
-    def test_nested_m2m_create(self):
-
+    def test_nested_list_create(self):
+        """POST
+        {
+          "title": "whatever",
+          "feature_type": {
+            "name": "some new feature type"
+          },
+          "tags": [{
+            "id": 1,
+            "name": "some existing tag"
+          }, {
+            "id": 2,
+            "name": "another existing tag"
+          }]
+        }
+        """
         self.assertEqual(Tag.objects.count(), 0)
-
+        tag1 = Tag.objects.create(name='tag uno')
+        tag2 = Tag.objects.create(name='tag dos')
         serializer = ArticleSerializer(data={
-            'title': 'testing',
+            'title': 'lets test some tags',
             'feature_type': {
-                'name': 'testing'
+                'name': 'tag tester',
             },
             'tags': [{
-                'name': 'wow'
-            },
-            {
-                'name': 'dads'
+                'id': tag1.id,
+                'name': tag1.name,
+            }, {
+                'id': tag2.id,
+                'name': tag2.name,
             }]
         })
         assert serializer.is_valid()
-        instance = serializer.save()
-
-        self.assertEqual(instance.tags.count(), 2)
+        _ = serializer.save()
+        self.assertEqual(FeatureType.objects.count(), 1)
         self.assertEqual(Tag.objects.count(), 2)
+
+    def test_nested_list_create_full(self):
+        """POST
+        {
+          "title": "whatever",
+          "feature_type": {
+            "name": "some new feature type"
+          },
+          "tags": [{
+            "name": "some new tag"
+          }, {
+            "name": "another new tag"
+          }]
+        }
+        """
+        self.assertEqual(Tag.objects.count(), 0)
+        self.assertEqual(Tag.objects.count(), 0)
+        serializer = ArticleSerializer(data={
+            'title': 'lets test some tags',
+            'feature_type': {
+                'name': 'tag tester',
+            },
+            'tags': [{
+                'name': 'tag 1'
+            }, {
+                'name': 'tag 2'
+            }]
+        })
+        assert serializer.is_valid()
+        _ = serializer.save()
+
+        self.assertEqual(_.feature_type.name, 'tag tester')
+        self.assertEqual(_.tags.count(), 2)
+
+        self.assertEqual(FeatureType.objects.count(), 1)
+        self.assertEqual(Tag.objects.count(), 2)
+
+    def test_nested_update(self):
+        """PUT
+        {
+          "title": "whatever",
+          "feature_type": {
+            "id": 2,
+            "name": "some existing feature type that wasn't the originally used one"
+          }
+        }
+        """
+        self.assertEqual(FeatureType.objects.count(), 0)
+        serializer = ArticleSerializer(data={
+            'title': 'testing',
+            'feature_type': {
+                'name': 'DVR Club',
+            },
+        })
+        assert serializer.is_valid()
+        _ = serializer.save()
+        self.assertEqual(FeatureType.objects.count(), 1)
+        ft = FeatureType.objects.create(name='AV Undercover')
+
+        updated_data = serializer.data
+        updated_data['feature_type'] = {
+            'id': ft.id,
+            'name': ft.name,
+        }
+        serializer = ArticleSerializer(data=updated_data)
+        assert serializer.is_valid()
+        _ = serializer.save()
+        self.assertEqual(_.feature_type.id, ft.id)
+
+    def test_nested_list_update(self):
+        """PUT
+        {
+          "title": "whatever",
+          "feature_type": {
+            "id": 1,
+            "name": "some existing feature type"
+          },
+          "tags": [{
+            "id": 1,
+            "name": "some existing tag that wasn't originally used in post"
+          }]
+        }
+        """
+        serializer = ArticleSerializer(data={
+            'title': 'testing',
+            'feature_type': {
+                'name': 'Blah blah blah',
+            },
+        })
+        assert serializer.is_valid()
+        _ = serializer.save()
+        self.assertEqual(Tag.objects.count(), 0)
+        tag = Tag.objects.create(name='this is a tag')
+
+        updated_data = serializer.data
+        updated_data['tags'].append({
+            'id': tag.id,
+            'name': tag.name,
+        })
+        serializer = ArticleSerializer(data=updated_data)
+        assert serializer.is_valid()
+        _ = serializer.save()
+        self.assertEqual(Tag.objects.count(), 1)
+
+    def test_nested_list_update_full(self):
+        """PUT
+        {
+          "title": "whatever",
+          "feature_type": {
+            "id": 1,
+            "name": "some existing feature type"
+          },
+          "tags": [{
+            "name": "some new tag"
+          }]
+        }
+        """
+        self.assertEqual(Tag.objects.count(), 0)
+        serializer = ArticleSerializer(data={
+            'title': 'testing',
+            'feature_type': {
+                'name': 'Blah blah blah',
+            },
+        })
+        assert serializer.is_valid()
+        _ = serializer.save()
+        self.assertEqual(Tag.objects.count(), 0)
+
+
+        updated_data = serializer.data
+        updated_data['tags'].append({
+            'name': 'this is another tag',
+        })
+        serializer = ArticleSerializer(data=updated_data)
+        assert serializer.is_valid()
+        _ = serializer.save()
+        self.assertEqual(Tag.objects.count(), 1)
 
 
 class QuizCase(TestCase):
