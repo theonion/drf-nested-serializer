@@ -139,11 +139,14 @@ class NestedModelSerializer(serializers.ModelSerializer):
                     else:
                         # Update
                         ChildClass = field.Meta.model
-                        child_instance = ChildClass.objects.get(pk=nested_data["id"])
+                        try:
+                            child_instance = ChildClass.objects.get(pk=nested_data["id"])
+                        except ChildClass.DoesNotExist:
+                            child_instance = field.create(nested_data)
+                        else:
+                            del nested_data["id"]
+                            child_instance = field.update(child_instance, nested_data)
 
-                        del nested_data["id"]
-
-                        child_instance = field.update(child_instance, nested_data)
                     validated_data[key] = child_instance
 
         return super(NestedModelSerializer, self).update(instance, validated_data)
