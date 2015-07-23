@@ -10,9 +10,13 @@ class FeatureType(models.Model):
     name = models.CharField(max_length=255)
 
 
+class UnnecessaryModel(models.Model):
+    name = models.CharField(max_length=244)
+
+
 class Article(models.Model):
     title = models.CharField(max_length=255)
-
+    unnecessary = models.ForeignKey(UnnecessaryModel, null=True, blank=True, default=None)
     tags = models.ManyToManyField(Tag)
     feature_type = models.ForeignKey(FeatureType)
 

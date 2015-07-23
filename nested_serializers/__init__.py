@@ -1,4 +1,4 @@
-__version__ = "0.3"
+__version__ = "0.3.1"
 
 from rest_framework import serializers
 from rest_framework.fields import set_value, empty
@@ -154,6 +154,13 @@ class NestedModelSerializer(serializers.ModelSerializer):
                             child_instance = field.update(child_instance, nested_data)
 
                     validated_data[key] = child_instance
+
+                elif not validated_data.get(key):
+                    # null value passed - check if null allowed for field
+                    ModelClass = self.Meta.model
+                    model_field = ModelClass._meta.get_field(key)
+                    if not model_field.null:
+                        validated_data[key] = None
 
         return super(NestedModelSerializer, self).update(instance, validated_data)
 
