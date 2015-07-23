@@ -1,5 +1,7 @@
 __version__ = "0.3.1"
 
+from collections import OrderedDict
+
 from rest_framework import serializers
 from rest_framework.fields import set_value, empty
 from rest_framework.compat import OrderedDict
@@ -118,22 +120,16 @@ class NestedModelSerializer(serializers.ModelSerializer):
 
         for key, field in self.fields.items():
             if isinstance(field, serializers.BaseSerializer):
-
                 child_instances = getattr(instance, key)
-
-                # TODO: DRY UP THIS SHIT....
 
                 # If this field is a serializer, we probably are dealing with a nested object
                 if isinstance(validated_data.get(key), list):
                     # This will get handled in NestedListSerializer...
-
                     nested_data = validated_data.pop(key)
-
                     field.update(child_instances.all(), nested_data)
 
-                elif isinstance(validated_data.get(key), dict):
+                elif isinstance(validated_data.get(key), (dict, OrderedDict)):
                     # Looks like we're dealing with some kind of ForeignKey
-
                     nested_data = validated_data.pop(key)
                     if nested_data.get("id", empty) is empty:
                         # No id, so it looks like we've got a create...
@@ -142,6 +138,7 @@ class NestedModelSerializer(serializers.ModelSerializer):
                         except KeyError:
                             pass
                         child_instance = field.create(nested_data)
+
                     else:
                         # Update
                         ChildClass = field.Meta.model
@@ -155,11 +152,11 @@ class NestedModelSerializer(serializers.ModelSerializer):
 
                     validated_data[key] = child_instance
 
-                elif not validated_data.get(key):
+                elif validated_data.get(key, True) is None:
                     # null value passed - check if null allowed for field
                     ModelClass = self.Meta.model
                     model_field = ModelClass._meta.get_field(key)
-                    if not model_field.null:
+                    if model_field.null:
                         validated_data[key] = None
 
         return super(NestedModelSerializer, self).update(instance, validated_data)
@@ -182,20 +179,17 @@ class NestedModelSerializer(serializers.ModelSerializer):
                     nested_data = validated_data.pop(key)
                     many_to_many[key] = field.create(nested_data)
 
-
-
                 elif isinstance(validated_data.get(key), dict):
                     # ForeignKey
                     nested_data = validated_data.pop(key)
                     if nested_data.get("id", empty) is empty:
                         # No id, so it looks like we've got a create...
-
                         del nested_data["id"]
                         child_instance = field.create(nested_data)
+
                     else:
                         # Update
                         ChildClass = field.Meta.model
-
                         try:
                             child_instance = ChildClass.objects.get(pk=nested_data["id"])
                         except ChildClass.DoesNotExist:
