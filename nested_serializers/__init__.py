@@ -117,6 +117,8 @@ class NestedModelSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         """This methods acts just like it's parent, except that it creates and updates nested object"""
+        import pdb
+        pdb.set_trace()
 
         for key, field in self.fields.items():
             if isinstance(field, serializers.BaseSerializer):

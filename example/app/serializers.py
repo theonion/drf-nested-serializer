@@ -1,4 +1,4 @@
-from .models import Quiz, QuizAnswer, QuizOutcome, QuizQuestion, FeatureType, UnnecessaryModel, Article
+from .models import Quiz, QuizAnswer, QuizOutcome, QuizQuestion, FeatureType, UnnecessaryModel, Tag, Article
 
 from nested_serializers import NestedModelSerializer
 
@@ -39,8 +39,15 @@ class UnnecessaryModelSerializer(NestedModelSerializer):
         model = UnnecessaryModel
 
 
+class TagSerializer(NestedModelSerializer):
+    class Meta:
+        model = Tag
+
+
 class ArticleSerializer(NestedModelSerializer):
     unnecessary = UnnecessaryModelSerializer(allow_null=True)
+    tags = TagSerializer(many=True, allow_null=True)
+    feature_type = FeatureTypeSerializer()
 
     class Meta:
         model = Article
