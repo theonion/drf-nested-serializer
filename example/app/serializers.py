@@ -1,4 +1,4 @@
-from .models import Quiz, QuizAnswer, QuizOutcome, QuizQuestion, Article
+from .models import Quiz, QuizAnswer, QuizOutcome, QuizQuestion, FeatureType, Article
 
 from nested_serializers import NestedModelSerializer
 
@@ -27,6 +27,11 @@ class QuizSerializer(NestedModelSerializer):
 
     class Meta:
         model = Quiz
+
+
+class FeatureTypeSerializer(NestedModelSerializer):
+    class Meta:
+        model = FeatureType
 
 
 class ArticleSerializer(NestedModelSerializer):

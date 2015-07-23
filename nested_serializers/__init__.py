@@ -1,4 +1,4 @@
-__version__ = "0.2"
+__version__ = "0.3"
 
 from rest_framework import serializers
 from rest_framework.fields import set_value, empty
@@ -54,8 +54,14 @@ class NestedListSerializer(serializers.ListSerializer):
             parent_model = self.parent.Meta.model
             child_model = self.child.Meta.model
 
-            dependent_fields = [f for f in child_model._meta.get_fields() if
-                                f.is_relation and f.related_model == parent_model and not f.null]
+            dependent_fields = []
+            for field in child_model._meta.get_fields():
+                if field.is_relation and field.related_model == parent_model:
+                    try:
+                        if not field.null:
+                            dependent_fields.append(field)
+                    except AttributeError:
+                        dependent_fields.append(field)
 
             if dependent_fields:
                 # Delete any unattached objects

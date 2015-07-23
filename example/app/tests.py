@@ -1,7 +1,35 @@
 from django.test import TestCase
+from rest_framework.test import APIClient
 
-from .serializers import QuizSerializer, ArticleSerializer
+from .serializers import QuizSerializer, ArticleSerializer  # noqa
 from .models import *  # noqa
+
+
+class ApiTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.feature_type = FeatureType.objects.create(name='the barfinator')
+        self.article = Article.objects.create(title='puuuuuke', feature_type=self.feature_type)
+
+    def test_update(self):
+        url = '/api/articles/{pk}/'.format(pk=self.article.pk)
+        get_response = self.client.get(url, format='json')
+
+        get_payload = get_response.data
+        get_payload['title'] = 'brrraaaaaaaiiinnnnnnnss'
+
+        put_response = self.client.put(url, data=get_payload, format='json')
+        updated_payload = put_response.data
+        self.assertEqual(get_payload['feature_type'], updated_payload['feature_type'])
+
+        new_ft = FeatureType.objects.create(name='omg i like cant even')
+        updated_payload['feature_type'] = {'id': new_ft.pk, 'name': new_ft.name}
+
+        ft_put_response = self.client.put(url, data=updated_payload, format='json')
+        ft_updated_payload = ft_put_response.data
+
+        self.assertEqual(ft_updated_payload['feature_type']['id'], new_ft.pk)
+        self.assertEqual(ft_updated_payload['title'], updated_payload['title'])
 
 
 class ArticleCase(TestCase):
@@ -151,6 +179,13 @@ class ArticleCase(TestCase):
         assert serializer.is_valid()
         _ = serializer.save()
         self.assertEqual(_.feature_type.id, ft.id)
+
+        updated_data = serializer.data
+        updated_data['title'] = 'more testing'
+        serializer = ArticleSerializer(data=updated_data)
+        assert serializer.is_valid()
+        res = serializer.save()
+        self.assertEqual(res.feature_type.id, ft.id)
 
     def test_nested_list_update(self):
         """PUT
