@@ -1,16 +1,15 @@
 language: python
+
 python:
   - '2.7'
   - '3.4'
+
 install:
   - travis_retry pip install -e .
   - travis_retry pip install "file://$(pwd)#egg=drf-nested-serializer[dev]"
+
 script:
   - coverage run --source=nested_serializers setup.py test
+
 after_success:
   - coveralls
-notifications:
-  email:
-    - csinchok@theonion.com
-  on_failure: change
-  on_success: change

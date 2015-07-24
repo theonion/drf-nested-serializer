@@ -4,5 +4,5 @@ from .app.views import router
 
 urlpatterns = patterns(
     '',
-    url(r'api/', include(router.urls)),
+    url(r'api/', include(router.urls, namespace='api')),
 )

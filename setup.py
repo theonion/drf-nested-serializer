@@ -2,22 +2,26 @@
 # -*- coding: utf-8 -*-
 
 import os
-import re
-import sys
 from setuptools import setup
 
+# ---------------------------------------
+# set this sucker!!
+
+VERSION = '1.0.0'
+# ---------------------------------------
 
 name = "drf-nested-serializers"
 package = "nested_serializers"
 description = "America's Finest Namespace"
 url = "https://github.com/theonion/drf-nested-serializers"
-author = "Chris Sinchok"
-author_email = "csinchok@theonion.com"
+author = "Onion Devs"
+author_email = "webtech@theonion.com"
 license = "BSD"
 
 requires = [
-    "django>1.8",
-    "djangorestframework>=3.0"
+    "django>1.8,<1.9",
+    "djangorestframework>=3.0,<4.0",
+    "six",
 ]
 
 dev_requires = [
@@ -27,17 +31,8 @@ dev_requires = [
 ]
 
 
-def get_version(package):
-    """
-    Return package version as listed in `__version__` in `init.py`.
-    """
-    init_py = open(os.path.join(package, "__init__.py")).read()
-    return re.search("^__version__ = ['\"]([^'\"]+)['\"]", init_py, re.MULTILINE).group(1)
-
-
 def get_packages(package):
-    """
-    Return root package and all sub-packages.
+    """Return root package and all sub-packages.
     """
     return [dirpath
             for dirpath, dirnames, filenames in os.walk(package)
@@ -45,9 +40,7 @@ def get_packages(package):
 
 
 def get_package_data(package):
-    """
-    Return all files under the root package, that are not in a
-    package themselves.
+    """Return all files under the root package, that are not in a package themselves.
     """
     walk = [(dirpath.replace(package + os.sep, "", 1), filenames)
             for dirpath, dirnames, filenames in os.walk(package)
@@ -60,17 +53,9 @@ def get_package_data(package):
     return {package: filepaths}
 
 
-if sys.argv[-1] == "publish":
-    os.system("python setup.py sdist upload")
-    args = {"version": get_version(package)}
-    print("You probably want to also tag the version now:")
-    print("  git tag -a %(version)s -m 'version %(version)s'" % args)
-    print("  git push --tags")
-    sys.exit()
-
 setup(
     name=name,
-    version=get_version(package),
+    version=VERSION,
     url=url,
     license=license,
     description=description,
@@ -82,5 +67,5 @@ setup(
     extras_require={
         'dev': dev_requires,
     },
-    test_suite = "example.runtests"
+    test_suite="example.runtests"
 )

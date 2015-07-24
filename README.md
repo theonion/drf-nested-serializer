@@ -30,28 +30,13 @@ class FeatureType(models.Model):
 
 class Article(models.Model):
 	title = models.CharField(max_length=255)
-
 	tags = models.ManyToManyField(Tag)
 	feature_type = models.ForeignKey(FeatureType)
 
 
 class ArticleSerializer(NestedSerializer):
-
     class Meta:
         model = Article
-```
-
-We can add new feature types while creating new articles:
-
-```python
-serializer = ArticleSerializer(data={
-	'title': 'testing',
-	'feature_type': {
-		'name': 'testing'
-	}
-})
-assert serializer.is_valid()
-instance = serializer.save()
 ```
 
 We can add add existing feature types to new articles:
@@ -61,10 +46,12 @@ serializer = ArticleSerializer(data={
 	'title': 'testing',
 	'feature_type': {
 		'id': 1
-		'name': 'testing'
 	}
 })
 assert serializer.is_valid()
 instance = serializer.save()
 ```
 
+However, you cannot descend into nested models and lists to create new instances. This is a controversial 
+point in REST, and it is the opinion of the team that it's ideal to independently `POST` nested objects 
+before they are `PUT` into another object.

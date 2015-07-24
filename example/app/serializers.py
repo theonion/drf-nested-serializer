@@ -1,53 +1,24 @@
-from .models import Quiz, QuizAnswer, QuizOutcome, QuizQuestion, FeatureType, UnnecessaryModel, Tag, Article
-
 from nested_serializers import NestedModelSerializer
 
-
-class QuizOutcomeSerializer(NestedModelSerializer):
-    class Meta:
-        model = QuizOutcome
-
-
-class QuizAnswerSerializer(NestedModelSerializer):
-    class Meta:
-        model = QuizAnswer
-
-
-class QuizQuestionSerializer(NestedModelSerializer):
-    answer_set = QuizAnswerSerializer(many=True, required=False)
-
-    class Meta:
-        model = QuizQuestion
+from .fields import NestedUnnecessaryField, NestedTagField, NestedFeatureTypeField, NestedQuizQuestionField, \
+    NestedQuizOutcomeField
+from .models import Quiz, Article
 
 
 class QuizSerializer(NestedModelSerializer):
     """Serializes our fabulous quiz content."""
-    question_set = QuizQuestionSerializer(many=True, required=False)
-    outcome_set = QuizOutcomeSerializer(many=True, required=False)
+    question_set = NestedQuizQuestionField(many=True, allow_null=True)
+    outcome_set = NestedQuizOutcomeField(many=True, allow_null=True)
 
     class Meta:
         model = Quiz
-
-
-class FeatureTypeSerializer(NestedModelSerializer):
-    class Meta:
-        model = FeatureType
-
-
-class UnnecessaryModelSerializer(NestedModelSerializer):
-    class Meta:
-        model = UnnecessaryModel
-
-
-class TagSerializer(NestedModelSerializer):
-    class Meta:
-        model = Tag
+        depth = 2
 
 
 class ArticleSerializer(NestedModelSerializer):
-    unnecessary = UnnecessaryModelSerializer(allow_null=True)
-    tags = TagSerializer(many=True, allow_null=True)
-    feature_type = FeatureTypeSerializer()
+    unnecessary = NestedUnnecessaryField(allow_null=True)
+    tags = NestedTagField(many=True, allow_null=True)
+    feature_type = NestedFeatureTypeField()
 
     class Meta:
         model = Article
