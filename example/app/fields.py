@@ -1,6 +1,6 @@
 from nested_serializers.fields import NestedModelField
 
-from .models import UnnecessaryModel, Tag, FeatureType, QuizQuestion, QuizOutcome, QuizAnswer
+from .models import UnnecessaryModel, Tag, FeatureType, QuizQuestion, QuizOutcome, QuizAnswer, Author
 
 
 class NestedUnnecessaryField(NestedModelField):
@@ -16,6 +16,11 @@ class NestedTagField(NestedModelField):
 class NestedFeatureTypeField(NestedModelField):
     class Meta(object):
         model = FeatureType
+
+
+class NestedAuthorField(NestedModelField):
+    class Meta(object):
+        model = Author
 
 
 class NestedQuizAnswerField(NestedModelField):

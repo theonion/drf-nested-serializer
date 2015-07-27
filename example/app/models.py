@@ -21,6 +21,16 @@ class Article(models.Model):
     feature_type = models.ForeignKey(FeatureType)
 
 
+class Author(models.Model):
+    name = models.CharField(max_length=255)
+    article = models.ForeignKey(Article, related_name='authors')
+
+    class Meta(object):
+        unique_together = (
+            ('name', 'article', ),
+        )
+
+
 # A much more complex quiz model
 
 class Quiz(models.Model):

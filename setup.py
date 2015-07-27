@@ -7,7 +7,7 @@ from setuptools import setup
 # ---------------------------------------
 # set this sucker!!
 
-VERSION = '1.0.0'
+VERSION = '1.0.1'
 # ---------------------------------------
 
 name = "drf-nested-serializers"

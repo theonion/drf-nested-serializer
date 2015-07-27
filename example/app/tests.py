@@ -27,6 +27,7 @@ class ArticleTests(TestCase):
                 'id': ft.pk,
                 'name': ft.name,
             },
+            'authors': [],
         }
 
         self.assertEqual(response, expected)
@@ -43,6 +44,7 @@ class ArticleTests(TestCase):
             },
             'tags': [],
             'unnecessary': None,
+            'authors': [],
         }
         response = self.client.post(url, data=payload, format='json')
         self.assertIn(response.status_code, (200, 201, 202))
@@ -56,6 +58,7 @@ class ArticleTests(TestCase):
             },
             'tags': [],
             'unnecessary': None,
+            'authors': [],
         }
         response = self.client.post(url, data=payload, format='json')
         self.assertEqual(response.status_code, 400)
@@ -75,6 +78,7 @@ class ArticleTests(TestCase):
                 'name': 'Ka Pow!'
             }],
             'unnecessary': None,
+            'authors': [],
         }
         response = self.client.post(url, data=payload, format='json')
         self.assertEqual(response.status_code, 400)
@@ -84,6 +88,13 @@ class ArticleTests(TestCase):
         ft.save()
         article = mommy.make(Article, feature_type=ft)
         article.save()
+        tags = mommy.make(Tag, _quantity=3)
+        for tag in tags:
+            tag.save()
+        article.tags.add(*tags)
+        authors = mommy.make(Author, article=article, _quantity=3)
+        for author in authors:
+            author.save()
 
         url = reverse('api:article-detail', kwargs={'pk': article.pk})
 

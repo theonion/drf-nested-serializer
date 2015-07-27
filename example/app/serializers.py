@@ -1,7 +1,7 @@
 from nested_serializers import NestedModelSerializer
 
 from .fields import NestedUnnecessaryField, NestedTagField, NestedFeatureTypeField, NestedQuizQuestionField, \
-    NestedQuizOutcomeField
+    NestedQuizOutcomeField, NestedAuthorField
 from .models import Quiz, Article
 
 
@@ -19,6 +19,7 @@ class ArticleSerializer(NestedModelSerializer):
     unnecessary = NestedUnnecessaryField(allow_null=True)
     tags = NestedTagField(many=True, allow_null=True)
     feature_type = NestedFeatureTypeField()
+    authors = NestedAuthorField(many=True)
 
     class Meta:
         model = Article
