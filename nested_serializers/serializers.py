@@ -180,8 +180,6 @@ class NestedModelSerializer(serializers.ModelSerializer):
                     many_to_many[key] = field.create(nested_data)
 
                 elif isinstance(validated_data.get(key), dict):
-                    import pdb
-                    pdb.set_trace()
                     # ForeignKey
                     nested_data = validated_data.pop(key)
                     if nested_data.get("id", empty) is empty:
